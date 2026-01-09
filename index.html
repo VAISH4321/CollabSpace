@@ -1,0 +1,735 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>CollabSpace — Project Spark (Enhanced)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    :root{
+      --bg:#f7f8fb; --text:#1f2430; --muted:#6b7280; --primary:#2575fc;
+      --accent:#6a11cb; --card:#ffffff; --border:#e5e7eb; --success:#10b981;
+      --warn:#f59e0b; --danger:#ef4444;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif}
+    a{text-decoration:none;color:var(--primary)}
+    /* Header + Nav */
+    header{position:sticky;top:0;z-index:1000;background:#fff;border-bottom:1px solid var(--border)}
+    .nav{max-width:1200px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;gap:24px;justify-content:space-between}
+    .brand{font-weight:700;letter-spacing:.2px;color:#111;display:flex;align-items:center;gap:10px}
+    .welcome{color:var(--primary);font-weight:700}
+    .nav-links{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+    .nav-links a{color:#111;padding:8px 10px;border-radius:6px}
+    .nav-links a:hover{background:#f2f4f8}
+    .btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 14px;border:0;border-radius:8px;cursor:pointer;font-weight:600}
+    .btn-primary{background:linear-gradient(90deg,var(--accent),var(--primary));color:#fff}
+    .btn-primary:hover{filter:brightness(1.05)}
+    .btn-outline{border:1px solid var(--border);background:#fff;color:#111}
+    .btn-outline:hover{background:#f6f8fc}
+    /* Notification bell */
+    .notif{position:relative}
+    .bell{font-size:20px;line-height:20px}
+    .badge-dot{position:absolute;top:-2px;right:-2px;background:#ff3b3b;color:#fff;font-size:10px;padding:2px 6px;border-radius:999px}
+    .notif-dd{position:absolute;right:0;top:28px;background:#fff;border:1px solid var(--border);border-radius:10px;min-width:280px;box-shadow:0 10px 24px rgba(17,24,39,.12);display:none;overflow:hidden}
+    .notif-dd.show{display:block}
+    .notif-head{padding:10px 12px;border-bottom:1px solid var(--border);font-weight:600}
+    .notif-item{padding:10px 12px;border-bottom:1px solid var(--border);display:flex;gap:10px}
+    .notif-item:last-child{border-bottom:none}
+    .notif-time{color:var(--muted);font-size:12px;margin-left:auto}
+    /* Hero */
+    .hero{background:linear-gradient(135deg,rgba(106,17,203,.08),rgba(37,117,252,.10));border-bottom:1px solid var(--border)}
+    .hero-inner{max-width:1200px;margin:0 auto;padding:56px 20px;text-align:center}
+    .hero h1{font-size:36px;margin:0 0 12px}
+    .hero p{max-width:760px;margin:0 auto 20px;color:var(--muted)}
+    .hero-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+    /* Layout */
+    main{max-width:1200px;margin:0 auto;padding:28px 20px}
+    section{margin:28px 0}
+    .section-head{display:flex;align-items:end;justify-content:space-between;gap:16px;margin-bottom:16px}
+    .section-title{font-size:22px;font-weight:700}
+    .section-sub{color:var(--muted);font-size:14px}
+    .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
+    .col-12{grid-column:span 12}
+    .col-6{grid-column:span 6}
+    .col-4{grid-column:span 4}
+    @media (max-width:960px){.col-6,.col-4{grid-column:span 12}}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;box-shadow:0 4px 20px rgba(16,24,40,.04)}
+    .tags{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
+    .tag{background:#eef2ff;color:#3730a3;padding:4px 10px;border-radius:999px;font-size:12px}
+    .divider{height:1px;background:var(--border);margin:12px 0}
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .muted{color:var(--muted)}
+    .badge{padding:4px 8px;font-size:12px;border-radius:999px;background:#f8fafc;border:1px solid var(--border)}
+    .badge.success{background:#ecfdf5;border-color:#d1fae5;color:#065f46}
+    .badge.warn{background:#fffbeb;border-color:#fde68a;color:#92400e}
+    .badge.pending{background:#f1f5f9;border-color:#cbd5e1;color:#334155}
+    /* Profiles */
+    .profile{display:flex;gap:14px}
+    .avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;background:#f0f4ff;color:#222}
+    /* Dashboard */
+    .progress-bar{height:10px;border-radius:999px;background:#eef2f7;overflow:hidden}
+    .progress-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--accent))}
+    .list{display:grid;gap:8px}
+    .item{display:flex;align-items:center;justify-content:space-between;padding:5px 10px;border:1px solid var(--border);border-radius:10px;background:#fff}
+    /* Modal */
+    .modal-backdrop{position:fixed;inset:0;background:rgba(17,24,39,.4);display:none;align-items:center;justify-content:center;padding:20px;z-index:2000}
+    .modal{background:#fff;border-radius:12px;max-width:520px;width:100%;border:1px solid var(--border);box-shadow:0 20px 40px rgba(17,24,39,.2)}
+    .modal-header{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+    .modal-body{padding:16px}
+    .close{border:none;background:transparent;font-size:22px;cursor:pointer;color:#555}
+    input[type="text"],input[type="email"],input[type="password"]{width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;background:#fff}
+    .hidden{display:none}
+    /* Connected People Chat (left sidebar + window) */
+    .chat-area{display:grid;grid-template-columns:320px 1fr;gap:16px}
+    @media (max-width:960px){.chat-area{grid-template-columns:1fr}}
+    .chat-sidebar{border:1px solid var(--border);border-radius:12px;background:#fff;overflow:hidden}
+    .chat-side-head{padding:12px 14px;border-bottom:1px solid var(--border);font-weight:700}
+    .chat-user{padding:10px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;cursor:pointer}
+    .chat-user:hover{background:#f7f9ff}
+    .chat-user .name{font-weight:600}
+    .chat-window{border:1px solid var(--border);border-radius:12px;background:#fff;display:flex;flex-direction:column;overflow:hidden}
+    .chat-window-head{padding:12px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+    .chat-messages{flex:1;padding:12px 14px;overflow:auto;background:#fbfcff;display:flex;flex-direction:column;gap:10px}
+    .msg{max-width:70%;padding:8px 10px;border-radius:12px;border:1px solid var(--border);background:#fff}
+    .msg.me{margin-left:auto;background:#eef6ff;border-color:#cfe4ff}
+    .msg .who{font-weight:600}
+    .msg .when{color:var(--muted);font-size:12px;margin-left:6px}
+    .chat-input{display:flex;gap:8px;padding:10px;border-top:1px solid var(--border);background:#fff}
+    .chat-input input{flex:1;padding:10px;border:1px solid var(--border);border-radius:10px}
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header>
+    <div class="nav">
+      <div class="brand">
+        CollabSpace
+        <span class="welcome" id="welcomeText"></span>
+      </div>
+      <nav class="nav-links">
+        <a href="#ideas">Project Ideas</a>
+        <a href="#teammates">Find Teammates</a>
+        <a href="#mentors">Mentor Connect</a>
+        <a href="#dashboard">Dashboard</a>
+        <!-- Notification bell -->
+        <div class="notif" id="notif">
+          <span class="bell">🔔</span>
+          <span class="badge-dot" id="notifCount">0</span>
+          <div class="notif-dd" id="notifDropdown">
+            <div class="notif-head">Notifications</div>
+            <div id="notifItems"></div>
+          </div>
+        </div>
+        <!-- Auth actions -->
+        <button class="btn btn-outline" id="loginBtn">Log In</button>
+        <button class="btn btn-primary" id="signupBtn">Get Started</button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero" id="home">
+    <div class="hero-inner">
+      <h1>Simplify Project Collaboration<br/>Find Your Perfect Team<br/>Build Amazing Projects</h1>
+      <p>Connect with teammates who complement your skills, discover verified project ideas, and get guidance from experienced mentors — all in one platform.</p>
+      <div class="hero-actions">
+        <button class="btn btn-primary" onclick="location.hash='#teammates'">Start Collaborating</button>
+        <button class="btn btn-outline" onclick="location.hash='#ideas'">Browse Projects</button>
+      </div>
+    </div>
+  </section>
+
+  <main>
+    <!-- Project Ideas -->
+    <section id="ideas">
+      <div class="section-head">
+        <div>
+          <div class="section-title">Explore Verified Project Ideas</div>
+          <div class="section-sub">Categorized, well-documented ideas aligned with current technologies.</div>
+        </div>
+        <button class="btn btn-outline" onclick="location.hash='#ideas'">View All Projects</button>
+      </div>
+      <div class="grid">
+        <div class="col-6">
+          <div class="card">
+            <div class="row" style="justify-content:space-between">
+              <h3>AI-Powered Study Planner</h3><span class="badge">AI/ML • Advanced</span>
+            </div>
+            <p>Create an intelligent study scheduling app using ML to optimize learning patterns and track progress.</p>
+            <div class="tags"><span class="tag">Python</span><span class="tag">React</span><span class="tag">TensorFlow</span><span class="tag">UI/UX</span></div>
+            <div class="row">
+              <button class="btn btn-outline btn-sm" data-project="study-planner" onclick="openIdea(this)">View Details →</button>
+              <button class="btn btn-primary btn-sm" onclick="addActiveProject('AI-Powered Study Planner')">Add to Dashboard</button>
+            </div>
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="card">
+            <div class="row" style="justify-content:space-between">
+              <h3>Campus Event Hub</h3><span class="badge">Web App • Intermediate</span>
+            </div>
+            <p>Discover & manage college events in real time with RSVP and social features.</p>
+            <div class="tags"><span class="tag">React</span><span class="tag">Node.js</span><span class="tag">MongoDB</span></div>
+            <div class="row">
+              <button class="btn btn-outline btn-sm" data-project="event-hub" onclick="openIdea(this)">View Details →</button>
+              <button class="btn btn-primary btn-sm" onclick="addActiveProject('Campus Event Hub')">Add to Dashboard</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Team Formation -->
+    <section id="teammates">
+      <div class="section-head">
+        <div>
+          <div class="section-title">Find Your Perfect Teammates</div>
+          <div class="section-sub">Browse profiles of students with complementary skills.</div>
+        </div>
+        <button class="btn btn-outline" onclick="location.hash='#teammates'">Browse All Students</button>
+      </div>
+      <div class="grid" id="profilesGrid"></div>
+    </section>
+
+    <!-- Mentor Connect -->
+    <section id="mentors">
+      <div class="section-head">
+        <div>
+          <div class="section-title">Connect with Mentors</div>
+          <div class="section-sub">Get personalized guidance from industry experts.</div>
+        </div>
+        <button class="btn btn-outline" onclick="location.hash='#mentors'">Browse All Mentors</button>
+      </div>
+      <div class="grid">
+        <div class="col-6">
+          <div class="card">
+            <div class="profile">
+              <div class="avatar">DJL</div>
+              <div>
+                <h3 style="margin:0">Dr. Jennifer Lee</h3>
+                <div class="muted">Senior Engineer at Google</div>
+                <div class="row"><span>★ 4.9</span><span class="muted">156 sessions</span></div>
+                <div class="tags"><span class="tag">System Design</span><span class="tag">Cloud Architecture</span><span class="tag">Career Growth</span></div>
+              </div>
+            </div>
+            <div class="row" style="justify-content:space-between;margin-top:10px">
+              <span class="badge success">Available</span>
+              <button class="btn btn-primary btn-sm" onclick="requestMentor('Dr. Jennifer Lee')">Request Mentorship</button>
+            </div>
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="card">
+            <div class="profile">
+              <div class="avatar">MW</div>
+              <div>
+                <h3 style="margin:0">Marcus Williams</h3>
+                <div class="muted">Tech Lead at Meta</div>
+                <div class="row"><span>★ 4.8</span><span class="muted">89 sessions</span></div>
+                <div class="tags"><span class="tag">React</span><span class="tag">Frontend Architecture</span><span class="tag">Team Leadership</span></div>
+              </div>
+            </div>
+            <div class="row" style="justify-content:space-between;margin-top:10px">
+              <span class="badge success">Available</span>
+              <button class="btn btn-primary btn-sm" onclick="requestMentor('Marcus Williams')">Request Mentorship</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Connected People Chat -->
+    <section id="chat">
+      <div class="section-head">
+        <div>
+          <div class="section-title">Chat with Connected People</div>
+          <div class="section-sub">Start conversations, share updates, and collaborate in real-time.</div>
+        </div>
+      </div>
+
+      <div class="chat-area">
+        <!-- Sidebar: people -->
+        <div class="chat-sidebar">
+          <div class="chat-side-head">Connected</div>
+          <div id="chatUsers"></div>
+        </div>
+
+        <!-- Window: messages -->
+        <div class="chat-window">
+          <div class="chat-window-head">
+            <div class="row">
+              <div class="avatar" id="chatActiveAvatar">--</div>
+              <div>
+                <strong id="chatActiveName">Select a person</strong>
+                <div class="muted" id="chatActiveStatus">No conversation loaded</div>
+              </div>
+            </div>
+            <div class="row">
+              <button class="btn btn-outline btn-sm" onclick="clearConversation()">Clear</button>
+            </div>
+          </div>
+          <div class="chat-messages" id="chatMessages"></div>
+          <div class="chat-input">
+            <input type="text" id="chatInput" placeholder="Type a message..." />
+            <button class="btn btn-primary" id="chatSendBtn">Send</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Dashboard -->
+    <section id="dashboard">
+      <div class="section-head">
+        <div>
+          <div class="section-title">Project Dashboard</div>
+          <div class="section-sub">Track progress, manage tasks, and communicate with your team.</div>
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="col-8">
+          <div class="card">
+            <div class="row" style="justify-content:space-between">
+              <div>
+                <div class="muted">Active Project</div>
+                <h3 id="activeProjectName">AI-Powered Study Planner</h3>
+              </div>
+              <div style="min-width:500px">
+                <div class="muted" style="text-align:right">Overall Progress</div>
+                <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:68%"></div></div>
+                <div class="row" style="justify-content:flex-end"><strong id="progressPct">68%</strong></div>
+              </div>
+            </div>
+            <div class="divider"></div>
+            <div class="row">
+              <div class="avatar">AC</div><div class="avatar">SJ</div><div class="avatar">MP</div>
+              <span class="muted">3 team members</span>
+            </div>
+            <div class="divider"></div>
+            <div class="grid">
+              <div class="col-4"><div class="item"><span>Completed</span><span class="badge success" id="completedCount">12</span></div></div>
+              <div class="col-4"><div class="item"><span>In Progress</span><span class="badge warn" id="inProgressCount">5</span></div></div>
+              <div class="col-4"><div class="item"><span>Pending</span><span class="badge pending" id="pendingCount">8</span></div></div>
+            </div>
+            <div class="divider"></div>
+            <div class="list" id="tasksList"></div>
+            <div class="row" style="margin-top:10px">
+              <input type="text" id="newTaskInput" placeholder="Add a new task…" />
+              <button class="btn btn-primary btn-sm" id="addTaskBtn">Add Task</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-4">
+          <div class="card">
+            <div class="row" style="justify-content:space-between;align-items:center">
+              <h3 style="margin:0">Team Chat (Activity)</h3>
+              <div class="badge">Mentor Sessions</div>
+            </div>
+            <div class="list" id="activityFeed"></div>
+            <div class="divider"></div>
+            <div class="row" style="justify-content:space-between">
+              <div>
+                <div class="muted">Next Milestone</div>
+                <div class="row"><span class="badge success" id="milestoneComplete">3 completed</span><span class="badge" id="milestoneDue">Due in 4 days</span></div>
+              </div>
+              <button class="btn btn-primary btn-sm" id="markMilestone">Mark 1 complete</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Auth Modal -->
+  <div class="modal-backdrop" id="authModal">
+    <div class="modal">
+      <div class="modal-header">
+        <strong id="authTitle">Log In</strong>
+        <button class="close" onclick="closeAuth()">×</button>
+      </div>
+      <div class="modal-body">
+        <div id="loginForm">
+          <label>Email</label>
+          <input type="email" id="loginEmail" placeholder="you@example.com" />
+          <label style="margin-top:10px">Password</label>
+          <input type="password" id="loginPass" placeholder="••••••••" />
+          <div class="row" style="justify-content:space-between;margin-top:12px">
+            <button class="btn btn-outline" onclick="toggleAuth('signup')">Create account</button>
+            <button class="btn btn-primary" onclick="doLogin()">Log In</button>
+          </div>
+        </div>
+        <div id="signupForm" class="hidden">
+          <label>Name</label>
+          <input type="text" id="signupName" placeholder="Your name" />
+          <label style="margin-top:10px">Email</label>
+          <input type="email" id="signupEmail" placeholder="you@example.com" />
+          <label style="margin-top:10px">Password</label>
+          <input type="password" id="signupPass" placeholder="••••••••" />
+          <div class="row" style="justify-content:space-between;margin-top:12px">
+            <button class="btn btn-outline" onclick="toggleAuth('login')">Already have an account</button>
+            <button class="btn btn-primary" onclick="doSignup()">Sign Up</button>
+          </div>
+        </div>
+        <div id="authMsg" class="muted" style="margin-top:10px"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Idea Modal -->
+  <div class="modal-backdrop" id="ideaModal">
+    <div class="modal">
+      <div class="modal-header">
+        <strong id="ideaTitle">Project Idea</strong>
+        <button class="close" onclick="closeIdea()">×</button>
+      </div>
+      <div class="modal-body" id="ideaBody"></div>
+    </div>
+  </div>
+
+  <footer style="border-top:1px solid var(--border);background:#fff">
+    <div style="max-width:1200px;margin:0 auto;padding:28px 20px;color:var(--muted);font-size:14px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px">
+      <div>© 2026 CollabSpace. All rights reserved.</div>
+      <div>Built with responsive design and smooth interactions.</div>
+    </div>
+   </footer>
+    <script>
+    const API = 'http://localhost:5000/api'; // backend base URL
+
+    // Mock Data (ideas, profiles, connectedUsers remain static for simplicity)
+    const profiles = [
+    {name:'Alex Chen', role:'Full Stack Developer', school:'MIT', rating:4.9, projects:12, skills:['React','Node.js','AWS'], looking:'Designer and ML engineer for an EdTech project', category:'Backend'},
+    {name:'Sarah Johnson', role:'UI/UX Designer', school:'Stanford', rating:4.8, projects:8, skills:['Figma','React','CSS'], looking:'Backend developers for a social platform idea', category:'Design'},
+    {name:'Michael Park', role:'Data Scientist', school:'Berkeley', rating:4.7, projects:6, skills:['Python','TensorFlow','SQL'], looking:'Collaborators for ML evaluation tooling', category:'Data'},
+    {name:'Emily Davis', role:'Mobile Developer', school:'Georgia Tech', rating:4.9, projects:10, skills:['Flutter','Firebase','Swift'], looking:'Backend partner for mobile finance app', category:'Mobile'}
+    ];
+    const connectedUsers = ['Alex Chen','Sarah Johnson','Michael Park','Emily Davis'];
+    const defaultTasks = [
+    {title:'Set up repository and CI', status:'completed'},
+    {title:'Define project scope and milestones', status:'completed'},
+    {title:'Build authentication flow', status:'inprogress'},
+    {title:'Design dashboard UI', status:'inprogress'},
+    {title:'Implement team chat module', status:'pending'},
+    {title:'Integrate mentor request actions', status:'pending'},
+    {title:'Create project ideas detail pages', status:'pending'},
+    {title:'Deploy staging environment', status:'pending'}
+    ];
+    const ideaDetails = {
+    'study-planner': {title:'AI-Powered Study Planner',level:'Advanced',size:'3–4',duration:'8 weeks',tech:['Python','React','TensorFlow','UI/UX'],desc:'Intelligent scheduling app that adapts to learning patterns. Includes spaced repetition, progress analytics, and mentor review checkpoints.'},
+    'event-hub': {title:'Campus Event Hub',level:'Intermediate',size:'2–3',duration:'6 weeks',tech:['React','Node.js','MongoDB'],desc:'Real-time event discovery, RSVP, and social features for students. Personalized recommendations and organizer dashboards.'}
+    };
+
+    // --- State ---
+    let state = {
+    user: null,
+    activeProject: 'AI-Powered Study Planner',
+    tasks: [],
+    activity: [],
+    milestoneCompleted: 3,
+    milestoneDueDays: 4,
+    chatWith: '',
+    chats: {}
+    };
+
+    // --- Utils ---
+    function initials(name){ return name.split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase(); }
+    function calcProgress(){ 
+    const total = state.tasks.length;
+    const done = state.tasks.filter(t=>t.status==='completed').length;
+    return total ? Math.round((done/total)*100) : 0;
+    }
+
+    // --- Notifications ---
+    async function renderNotifications(){
+    if(!state.user) return;
+    const res = await fetch(`${API}/notifications/${state.user.email}`);
+    const notifications = await res.json();
+    const count = notifications.length;
+    document.getElementById('notifCount').textContent = count;
+    const wrap = document.getElementById('notifItems');
+    wrap.innerHTML = '';
+    notifications.forEach(n=>{
+        const item = document.createElement('div');
+        item.className = 'notif-item';
+        item.innerHTML = `<span>${n.text}</span><span class="notif-time">${n.time}</span>`;
+        wrap.appendChild(item);
+    });
+    }
+    function toggleNotifications(){ document.getElementById('notifDropdown').classList.toggle('show'); }
+    document.getElementById('notif').addEventListener('click', e=>{ e.stopPropagation(); toggleNotifications(); });
+    document.addEventListener('click', ()=>{ document.getElementById('notifDropdown').classList.remove('show'); });
+
+    // --- Welcome ---
+    function renderWelcome(){
+    const w = document.getElementById('welcomeText');
+    w.textContent = state.user ? `Welcome, ${state.user.name}` : '';
+    document.getElementById('loginBtn').textContent = state.user ? 'Log Out' : 'Log In';
+    }
+
+    // --- Profiles ---
+    function renderProfiles(){
+    const host = document.getElementById('profilesGrid');
+    host.innerHTML = '';
+    profiles.forEach(p=>{
+        const col = document.createElement('div');
+        col.className = 'col-6';
+        col.innerHTML = `
+        <div class="card">
+            <div class="profile">
+            <div class="avatar">${initials(p.name)}</div>
+            <div>
+                <h3 style="margin:0">${p.name}</h3>
+                <div class="muted">${p.role} — ${p.school}</div>
+                <div class="row"><span>★ ${p.rating.toFixed(1)}</span><span class="muted">${p.projects} projects</span></div>
+                <div class="tags">${p.skills.map(s=>`<span class="tag">${s}</span>`).join('')}</div>
+                <div class="muted">Looking for: ${p.looking}</div>
+            </div>
+            </div>
+            <div class="row" style="justify-content:space-between;margin-top:10px">
+            <button class="btn btn-outline btn-sm" onclick="openChatWith('${p.name}')">Open Chat</button>
+            <button class="btn btn-primary btn-sm">Invite to Team</button>
+            </div>
+        </div>
+        `;
+        host.appendChild(col);
+    });
+    }
+
+    // --- Dashboard ---
+    async function renderDashboard(){
+    if(!state.user) return;
+    const email = state.user.email;
+    const res = await fetch(`${API}/tasks/${email}`);
+    state.tasks = await res.json();
+
+    document.getElementById('activeProjectName').textContent = state.activeProject;
+    const pct = calcProgress();
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('progressPct').textContent = pct + '%';
+
+    const comp = state.tasks.filter(t=>t.status==='completed').length;
+    const inprog = state.tasks.filter(t=>t.status==='inprogress').length;
+    const pend = state.tasks.filter(t=>t.status==='pending').length;
+    document.getElementById('completedCount').textContent = comp;
+    document.getElementById('inProgressCount').textContent = inprog;
+    document.getElementById('pendingCount').textContent = pend;
+
+    const list = document.getElementById('tasksList');
+    list.innerHTML = '';
+    state.tasks.forEach((t, i)=>{
+        const badgeClass = t.status==='completed' ? 'success' : t.status==='inprogress' ? 'warn' : 'pending';
+        const item = document.createElement('div');
+        item.className = 'item';
+        item.innerHTML = `
+        <span>${t.title}</span>
+        <div class="row">
+            <span class="badge ${badgeClass}">${t.status}</span>
+            <button class="btn btn-outline btn-sm" onclick="advanceTask(${i})">Advance</button>
+            <button class="btn btn-outline btn-sm" onclick="removeTask(${i})">Remove</button>
+        </div>
+        `;
+        list.appendChild(item);
+    });
+
+    // Activity feed
+    const actRes = await fetch(`${API}/activity/${email}`);
+    state.activity = await actRes.json();
+    const feed = document.getElementById('activityFeed');
+    feed.innerHTML = '';
+    state.activity.slice().reverse().forEach(a=>{
+        const itm = document.createElement('div');
+        itm.className = 'item';
+        itm.innerHTML = `<span>${a}</span>`;
+        feed.appendChild(itm);
+    });
+
+    document.getElementById('milestoneComplete').textContent = `${state.milestoneCompleted} completed`;
+    document.getElementById('milestoneDue').textContent = `Due in ${state.milestoneDueDays} days`;
+    }
+
+    async function addTask(){
+    const inp = document.getElementById('newTaskInput');
+    const title = inp.value.trim();
+    if(!title || !state.user) return;
+    await fetch(`${API}/tasks/${state.user.email}`, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({title})
+    });
+    inp.value = '';
+    renderDashboard();
+    }
+    async function removeTask(i){
+    if(!state.user) return;
+    await fetch(`${API}/tasks/${state.user.email}/${i}`, {method:'DELETE'});
+    renderDashboard();
+    }
+    async function advanceTask(i){
+    if(!state.user) return;
+    const task = state.tasks[i];
+    const order = ['pending','inprogress','completed'];
+    const next = order[Math.min(order.indexOf(task.status)+1, order.length-1)];
+    await fetch(`${API}/tasks/${state.user.email}/${i}`, {
+        method:'PUT',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({status: next})
+    });
+    renderDashboard();
+    }
+
+    // --- Auth ---
+    function openAuth(mode='login'){ document.getElementById('authModal').style.display='flex'; toggleAuth(mode); document.getElementById('authMsg').textContent=''; }
+    function closeAuth(){ document.getElementById('authModal').style.display='none'; }
+    function toggleAuth(mode){
+    const isLogin = mode==='login';
+    document.getElementById('loginForm').classList.toggle('hidden', !isLogin);
+    document.getElementById('signupForm').classList.toggle('hidden', isLogin);
+    document.getElementById('authTitle').textContent = isLogin ? 'Log In' : 'Sign Up';
+    }
+
+    async function doLogin(){
+    const email = document.getElementById('loginEmail').value.trim();
+    const pass = document.getElementById('loginPass').value.trim();
+    if(!email||!pass){ document.getElementById('authMsg').textContent='Please fill in all fields.'; return; }
+    const res = await fetch(`${API}/login`, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({email,pass})
+    });
+    const data = await res.json();
+    if(data.error){ document.getElementById('authMsg').textContent=data.error; return; }
+    state.user = data.user;
+    document.getElementById('authMsg').textContent = 'Logged in!';
+    renderWelcome();
+    renderDashboard();
+    renderNotifications();
+    renderChatUsers();
+    setTimeout(closeAuth,600);
+    }
+
+    async function doSignup(){
+    const name = document.getElementById('signupName').value.trim();
+    const email = document.getElementById('signupEmail').value.trim();
+    const pass = document.getElementById('signupPass').value.trim();
+    if(!name||!email||!pass){ document.getElementById('authMsg').textContent='Please fill in all fields.'; return; }
+    const res = await fetch(`${API}/signup`, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({name,email,pass})
+    });
+    const data = await res.json();
+    if(data.error){ document.getElementById('authMsg').textContent=data.error; return; }
+    state.user = data.user;
+    document.getElementById('authMsg').textContent='Account created!';
+    renderWelcome();
+    renderDashboard();
+    renderNotifications();
+    renderChatUsers();
+    setTimeout(closeAuth,600);
+    }
+
+    document.getElementById('loginBtn').addEventListener('click', ()=>{ 
+    if(state.user){ state.user=null; renderWelcome(); } else openAuth('login'); 
+    });
+    document.getElementById('signupBtn').addEventListener('click', ()=>openAuth('signup'));
+
+    // --- Chat ---
+    function renderChatUsers(){
+    const wrap = document.getElementById('chatUsers');
+    wrap.innerHTML = '';
+    connectedUsers.forEach(u=>{
+        const div = document.createElement('div');
+        div.className='chat-user';
+        div.innerHTML = `<div class="avatar">${initials(u)}</div><div class="name">${u}</div>`;
+        div.addEventListener('click', ()=>openChatWith(u));
+        wrap.appendChild(div);
+    });
+    }
+    async function openChatWith(name){
+    state.chatWith = name;
+    document.getElementById('chatActiveName').textContent = name;
+    document.getElementById('chatActiveAvatar').textContent = initials(name);
+    document.getElementById('chatActiveStatus').textContent='Active conversation';
+
+    if(state.user){
+        const res = await fetch(`${API}/chats/${state.user.email}`);
+        state.chats = await res.json();
+    }
+    renderMessages();
+    document.getElementById('chatInput').focus();
+    }
+    function renderMessages(){
+    const host = document.getElementById('chatMessages');
+    host.innerHTML = '';
+    const msgs = state.chats[state.chatWith] || [];
+    msgs.forEach(m=>{
+        const row = document.createElement('div');
+        row.className = 'msg' + (state.user && m.who===state.user.name ? ' me' : (m.who==='You' ? ' me' : ''));
+        row.innerHTML = `<span class="who">${m.who}:</span> <span>${m.text}</span> <span class="when">${m.when||''}</span>`;
+        host.appendChild(row);
+    });
+    host.scrollTop = host.scrollHeight;
+    }
+
+    async function sendChatMessage(){
+    const input = document.getElementById('chatInput');
+    const msg = input.value.trim();
+    if(!msg || !state.chatWith || !state.user) return;
+    const who = state.user.name;
+    const newMsg = {who,text:msg,when:'just now'};
+    state.chats[state.chatWith] = state.chats[state.chatWith] || [];
+    state.chats[state.chatWith].push(newMsg);
+
+    await fetch(`${API}/chats/${state.user.email}`, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({withUser: state.chatWith, ...newMsg})
+    });
+
+    // Also add activity
+    await fetch(`${API}/activity/${state.user.email}`, {
+        method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({text:`${who}: ${msg} (${newMsg.when})`})
+    });
+
+    input.value='';
+    renderMessages();
+    renderDashboard();
+    }
+    function clearConversation(){
+    if(!state.chatWith || !state.user) return;
+    if(!confirm('Clear this conversation?')) return;
+    state.chats[state.chatWith] = [];
+    fetch(`${API}/chats/${state.user.email}/${state.chatWith}`, {method:'DELETE'})
+    .then(()=>renderMessages());
+    }
+
+    document.getElementById('chatSendBtn').addEventListener('click', sendChatMessage);
+    document.getElementById('chatInput').addEventListener('keydown', e=>{ if(e.key==='Enter') sendChatMessage(); });
+
+    // --- Milestone ---
+    document.getElementById('markMilestone').addEventListener('click', ()=>{
+    state.milestoneCompleted+=1;
+    state.milestoneDueDays=Math.max(0,state.milestoneDueDays-1);
+    renderDashboard();
+    });
+
+    // --- Dashboard Add Task ---
+    document.getElementById('addTaskBtn').addEventListener('click', addTask);
+
+    // --- Init ---
+    renderProfiles();
+    renderWelcome();
+
+    // Smooth scroll
+    function handleHash(){
+    const id = location.hash.slice(1);
+    if(!id) return;
+    const el = document.getElementById(id);
+    if(el) el.scrollIntoView({behavior:'smooth', block:'start'});
+    }
+    window.addEventListener('hashchange', handleHash);
+    handleHash();
+    </script>
+</body>
+</html>
